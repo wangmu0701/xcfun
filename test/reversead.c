@@ -21,7 +21,7 @@ int main(void)
   xc_eval_setup(fun,
 		XC_A_B_AX_AY_AZ_BX_BY_BZ,
 		XC_PARTIAL_DERIVATIVES,
-		2);
+		1);
 
   nout = xc_output_length(fun);
 

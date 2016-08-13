@@ -4,10 +4,12 @@
 # -fno-threadsafe-statics. Note the last option.
 
 # C++ compiler and flags
-CXX=/usr/local/bin/g++
-CC=/usr/local/bin/gcc
-CFLAGS=-g -Wall -O2 # -ffast-math  -DNDEBUG
-CXXFLAGS=$(CFLAGS) -fno-rtti -fno-exceptions
+CXX=g++
+CC=gcc
+CFLAGS=-g -Wall -O2 -DXCFUN_REVERSEAD -I$(HOME)/packages/reversead/include # -ffast-math  -DNDEBUG
+CXXFLAGS=$(CFLAGS) -std=c++11 #-fno-rtti -fno-exceptions
+
+LIBS=-L$(HOME)/packages/reversead/lib -lreversead
 
 # Fortran compiler and flags (used in fortran/kernel_example.F90)
 FC=gfortran

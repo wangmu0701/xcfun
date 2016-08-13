@@ -11,15 +11,17 @@ T BR_z(const T &x)
   return (x-2)/x*exp(2.0/3.0*x);
 }
 
-static double NR_step(double x, double z)
+template <typename T>
+static T NR_step(T x, T z)
 {
   return (x*(3*x*(exp(-2.0/3.0*x)*z-1)+6))/(x*(2*x-4)+6);
 }
 
 // Return an x satisfying BR_z(x) = z
-static double BR(double z)
+template <typename T>
+static T BR(T z)
 {
-  double x0;
+  T x0;
   if (z < -1e4)
     x0 = -2/z;
   else if (z < -2)
@@ -30,12 +32,13 @@ static double BR(double z)
     x0 = 3.0/2.0*log(z) + 3.75/(1.5+log(z));
   for (int i=0;i<20;i++)
     {
-      double xold = x0;
+      T xold = x0;
       x0 += NR_step(x0,z);
       if (fabs(xold - x0) < 1e-15*(1 + x0))
 	return x0;
     }
-  fprintf(stderr,"BR: Not converged for z = %e\n",z);
+  //fprintf(stderr,"BR: Not converged for z = %e\n",z);
+  std::cerr << "BR: Not converged for z = " << z << std::endl;
   return x0;
 }
 

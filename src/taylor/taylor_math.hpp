@@ -588,6 +588,21 @@ static taylor<T,Nvar,Ndeg> sqrtx_asinh_sqrtx(const taylor<T,Nvar,Ndeg> &t)
     }
 }
 
+template <class T>
+static T min(const T& a, const T& b) {
+  if (a<b) {
+    return a;
+  } 
+  return b;
+}
+
+template <class T>
+static T max(const T& a, const T& b) {
+  if (a<b) {
+    return b;
+  } 
+  return a;
+}
 
 template<class T,int Nvar, int Ndeg>
 static taylor<T,Nvar,Ndeg> min(const taylor<T,Nvar,Ndeg> &a,

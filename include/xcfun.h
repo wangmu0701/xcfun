@@ -123,6 +123,11 @@ enum xc_mode
   // Length of the result[] argument to eval()
   int xc_output_length(xc_functional fun);
 
+  // Evaluating xc_eval using ReverseAD
+  void xc_eval_reversead(xc_functional fun,
+	       const double *density,
+	       double *result);
+
   // Evaluate the functional at density
   // In contracted mode density is of dimension 2^porder*Nvars
   void xc_eval(xc_functional fun,

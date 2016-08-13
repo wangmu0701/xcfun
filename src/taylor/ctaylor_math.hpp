@@ -65,6 +65,11 @@ static ctaylor<T,Nvar> operator/(const ctaylor<T,Nvar>& t, const S &x)
   return tmp;
 }
 
+template <class T>
+static T abs(const T& t) {
+  return fabs(t);
+}
+
 template<class T,int Nvar>
 static ctaylor<T,Nvar> abs(const ctaylor<T,Nvar> &t)
 {
@@ -86,6 +91,12 @@ static ctaylor<T,Nvar> exp(const ctaylor<T,Nvar> &t)
   ctaylor<T,Nvar> res;
   ctaylor_rec<T,Nvar>::compose(res.c,t.c,tmp);
   return res;
+}
+
+
+template <class T>
+static T expm1(const T& t) {
+  return exp(t) - 1.0;
 }
 
 // exp(x)-1, but accurate for small x
@@ -302,7 +313,12 @@ static ctaylor<T,Nvar> asinh(const ctaylor<T,Nvar> &t)
 }
 
 
-
+template<class T>
+static T sqrtx_asinh_sqrtx(const T& t) {
+// This is the unstable form
+  T s = sqrt(t);
+  return s*asinh(s);
+}
 /*
   The original function is unstable for small t[0] values similarly to
   the Boys function. Use an [8,8] Pade approximation when |t[0]| is

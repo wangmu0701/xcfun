@@ -9,6 +9,11 @@
 #include "taylor.hpp"
 #include "ctaylor.hpp"
 
+#ifdef XCFUN_REVERSEAD
+#include "reversead/reversead.hpp"
+using namespace ReverseAD;
+#endif
+
 #define XC_MAX_ALIASES 60
 #define MAX_ALIAS_TERMS 10
 #define XC_MAX_INVARS 20
@@ -58,6 +63,10 @@ struct functional_data
   int depends; // XC_DENSITY | XC_GRADIENT etc
 #define FP(N,E) ctaylor<ireal_t,N> (*fp##N)(const densvars<ctaylor<ireal_t,N> > &);
   FOR_EACH(XC_MAX_ORDER,FP,)
+
+#ifdef XCFUN_REVERSEAD
+  adouble (*fpr)(const densvars<adouble>&);
+#endif
   enum xc_vars test_vars;
   enum xc_mode test_mode;
   int test_order;

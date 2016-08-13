@@ -2,6 +2,12 @@
 #include <cstdlib>
 #include <cstring>
 #include "xcint.hpp"
+/*
+#ifdef XCFUN_REVERSEAD
+#include "reversead/reversead.hpp"
+using namespace ReverseAD;
+#endif
+*/
 
 xc_functional xc_new_functional_not_macro(int api_version)
 {
@@ -176,6 +182,76 @@ const char *xcfun_authors(void)
     "Alexei Yakovlev\n"
     "Michael Seth\n";
 }
+
+#ifdef XCFUN_REVERSEAD
+void xc_eval_reversead(xc_functional_obj *f, const double * input, double *output) {
+  if (f->mode == XC_MODE_UNSET)
+    xcint_die("xc_eval() called before a mode was successfully set",0);
+  if (f->vars == XC_VARS_UNSET)
+    xcint_die("xc_eval() called before variables were successfully set",0);
+  if (f->order == -1 && f->mode != XC_POTENTIAL)
+    xcint_die("xc_eval() called before the order was successfully set",0);
+  if (f->mode == XC_PARTIAL_DERIVATIVES)
+    {
+      switch (f->order)
+	{
+	case 0:
+	  {
+	    typedef ctaylor<ireal_t,0> ttype;
+	    int inlen = xcint_vars[f->vars].len;
+	    ttype in[XC_MAX_INVARS], out = 0;
+	    for (int i=0;i<inlen;i++)
+	      in[i] = input[i];
+	    densvars<ttype> d(f,in);
+	    for (int i=0;i<f->nr_active_functionals;i++)
+	      out +=  f->settings[f->active_functionals[i]->id]
+		      * f->active_functionals[i]->fp0(d);
+	    output[0] = out.get(CNST);
+	  }
+	  break;
+	case 1:
+	  {
+             int num_ind = xcint_vars[f->vars].len;
+             adouble* in_ad = new ReverseAD::adouble[num_ind];
+             adouble out_ad;
+             double dummy_out;
+             trace_on<double>();
+             for (int i = 0; i < num_ind; i++) {
+               in_ad[i] <<= input[i];
+             }
+             densvars<adouble> d(f, in_ad);
+             out_ad = 0.0;
+             for (int i = 0; i < f->nr_active_functionals; i++) {
+               out_ad += f->settings[f->active_functionals[i]->id] *
+                         f->active_functionals[i]->fpr(d);
+             }
+             out_ad >>= dummy_out;
+             std::shared_ptr<TrivialTrace<double>> trace = trace_off<double>();
+             BaseReverseAdjoint<double> adjoint(trace);
+             std::shared_ptr<DerivativeTensor<size_t, double>> tensor = adjoint.compute(num_ind, 1);
+             for (int i = 0; i <= num_ind; i++) {
+               output[i] = 0;
+             }
+             output[0] = dummy_out; 
+             size_t size;
+             size_t** tind;
+             double* values;
+             tensor->get_internal_coordinate_list(0, 1, &size, &tind, &values);
+             for (size_t i = 0; i < size; i++) {
+               output[tind[i][0]+1] = values[i];
+             }
+	  }
+	  break;
+	default:
+	  xcint_die("FIXME: Order too high for partial derivatives in xc_eval",f->order);
+	}
+    }
+  else 
+    {
+      xcint_die("Illegal mode in xc_eval_reversead()",f->mode);
+    }
+}
+#endif
 
 void xc_eval(xc_functional_obj *f, const double *input, double *output)
 {
