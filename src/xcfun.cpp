@@ -184,7 +184,24 @@ const char *xcfun_authors(void)
 }
 
 #ifdef XCFUN_REVERSEAD
+size_t base_index2(int num_ind, size_t row) {
+  size_t offset = (row == 0)?0:(num_ind*row-(row*(row-1))/2);
+  //std::cout << "row = " << row << ", offset = " << offset << std::endl;
+  return offset;
+}
+size_t base_index3(int num_ind, size_t row) {
+  size_t offset = 0;
+  if (row == 1) {
+    offset = (num_ind*(num_ind+1))/2;
+  } else if (row > 1) {
+    offset = (num_ind*(num_ind+1))/2*row
+           - num_ind * (row*(row-1))/2
+           + (row*(row-1)*(row-2))/6;
+  }
+  return offset;
+}
 void xc_eval_reversead(xc_functional_obj *f, const double * input, double *output) {
+  std::cout << "Evaluating using reversead" << std::endl;
   if (f->mode == XC_MODE_UNSET)
     xcint_die("xc_eval() called before a mode was successfully set",0);
   if (f->vars == XC_VARS_UNSET)
@@ -210,6 +227,8 @@ void xc_eval_reversead(xc_functional_obj *f, const double * input, double *outpu
 	  }
 	  break;
 	case 1:
+    case 2:
+    case 3:
 	  {
              int num_ind = xcint_vars[f->vars].len;
              adouble* in_ad = new ReverseAD::adouble[num_ind];
@@ -227,18 +246,71 @@ void xc_eval_reversead(xc_functional_obj *f, const double * input, double *outpu
              }
              out_ad >>= dummy_out;
              std::shared_ptr<TrivialTrace<double>> trace = trace_off<double>();
-             BaseReverseAdjoint<double> adjoint(trace);
-             std::shared_ptr<DerivativeTensor<size_t, double>> tensor = adjoint.compute(num_ind, 1);
-             for (int i = 0; i <= num_ind; i++) {
-               output[i] = 0;
+             std::shared_ptr<DerivativeTensor<size_t, double>> tensor;
+             switch (f->order) {
+               case 1:
+                 {
+                   BaseReverseAdjoint<double> adjoint(trace);
+                   tensor = adjoint.compute(num_ind, 1);
+                 }
+                 break;
+               case 2:
+                 {
+                   BaseReverseHessian<double> hessian(trace);
+                   tensor = hessian.compute(num_ind, 1);
+                 }
+                 break;
+               case 3:
+                 {
+                   BaseReverseThird<double> third(trace);
+                   tensor = third.compute(num_ind, 1);
+                 }
+                 break;
              }
-             output[0] = dummy_out; 
+             output[0] = dummy_out;
+             size_t index;
              size_t size;
              size_t** tind;
              double* values;
-             tensor->get_internal_coordinate_list(0, 1, &size, &tind, &values);
-             for (size_t i = 0; i < size; i++) {
-               output[tind[i][0]+1] = values[i];
+             if (f->order >=1) {
+               tensor->get_internal_coordinate_list(0, 1, &size, &tind, &values);
+               for (size_t i = 0; i < size; i++) {
+                 output[tind[i][0]+1] = values[i];
+               }
+             }
+             int l1 = num_ind+1;
+             if (f->order >=2) {
+               tensor->get_internal_coordinate_list(0, 2, &size, &tind, &values);
+               
+               for (int i = 0; i < num_ind; i++) {
+                 for (int j = 0; j <=i; j++) {
+                   output[l1+(i*(i+1)/2+j)] = 0.0;
+                 }
+               }
+               for (size_t i = 0; i < size; i++) {
+                 index = l1+base_index2(num_ind, tind[i][1])
+                       + (tind[i][0] - tind[i][1]);
+                 output[index] = values[i];
+               }
+             }
+             int l2 = 1 + num_ind + (num_ind*(num_ind+1))/2;
+             int l = l2;
+             if (f->order >=3) {
+               tensor->get_internal_coordinate_list(0, 3, &size, &tind, &values);
+               for (int i = 0; i < num_ind; i++) {
+                 for (int j = 0; j <= i; j++) {
+                   for (int k = 0; k <= j; k++) {
+                     output[l++] = 0.0;
+                   }
+                 }
+               }
+               for (size_t i = 0; i < size; i++) {
+                 index = l2 + base_index3(num_ind, tind[i][2])
+                    + base_index2(num_ind-tind[i][2],tind[i][1]-tind[i][2])
+                    + (tind[i][0] - tind[i][1]);
+                 printf("<%d, %d, %d> -> %d\n", tind[i][0], tind[i][1], tind[i][2], index);
+                 output[index] = values[i];
+               }
              }
 	  }
 	  break;

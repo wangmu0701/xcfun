@@ -6,10 +6,10 @@
 # C++ compiler and flags
 CXX=g++
 CC=gcc
-CFLAGS=-g -Wall -O2 -DXCFUN_REVERSEAD -I$(HOME)/packages/reversead/include # -ffast-math  -DNDEBUG
+CFLAGS=-g -Wall -O2 -DXCFUN_REVERSEAD -I$(HOME)/reversead/include # -ffast-math  -DNDEBUG
 CXXFLAGS=$(CFLAGS) -std=c++11 #-fno-rtti -fno-exceptions
 
-LIBS=-L$(HOME)/packages/reversead/lib -lreversead
+LIBS=-L$(HOME)/reversead/lib -lreversead
 
 # Fortran compiler and flags (used in fortran/kernel_example.F90)
 FC=gfortran

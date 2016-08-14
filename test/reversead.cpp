@@ -21,13 +21,13 @@ int main(void)
   xc_eval_setup(fun,
 		XC_A_B_AX_AY_AZ_BX_BY_BZ,
 		XC_PARTIAL_DERIVATIVES,
-		1);
+		3);
 
   nout = xc_output_length(fun);
 
   output = (double*)malloc(sizeof(*output)*nout);
 
-  xc_eval(fun,d_elements,output);
+  xc_eval_reversead(fun,d_elements,output);
 
   for (i=0;i<nout;i++)
     printf("%.8e\n",output[i]);
