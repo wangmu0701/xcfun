@@ -25,7 +25,7 @@ int main(void)
 
   nout = xc_output_length(fun);
 
-  output = malloc(sizeof(*output)*nout);
+  output = (double*)malloc(sizeof(*output)*nout);
 
   xc_eval(fun,d_elements,output);
 

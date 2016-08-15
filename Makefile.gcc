@@ -4,8 +4,8 @@
 # -fno-threadsafe-statics. Note the last option.
 
 # C++ compiler and flags
-CXX=/usr/local/bin/g++
-CC=/usr/local/bin/gcc
+CXX=g++
+CC=gcc
 CFLAGS=-g -Wall -O2 # -ffast-math  -DNDEBUG
 CXXFLAGS=$(CFLAGS) -fno-rtti -fno-exceptions
 

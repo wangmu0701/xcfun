@@ -23,7 +23,7 @@ reversead: test/reversead.cpp lib/libxcfun.a
 	$(CXX) $(CFLAGS) $< -o $@ -lxcfun -lm $(LIBS)
 
 example: test/example.c lib/libxcfun.a
-	$(CC) $(CFLAGS) $< -o $@ -lxcfun -lm $(LIBS)
+	$(CXX) $(CFLAGS) $< -o $@ -lxcfun -lm $(LIBS)
 
 funeval: test/funeval.c lib/libxcfun.a
 	$(CC) $(CFLAGS) $< -o $@ -lxcfun -lm $(LIBS)

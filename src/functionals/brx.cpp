@@ -3,6 +3,7 @@
 #include "functional.hpp"
 #include "slater.hpp"
 #include "taylor.hpp"
+#include <iostream>
 
 // This is the function we want to find roots for
 template<class T>
@@ -37,7 +38,7 @@ static T BR(T z)
       if (fabs(xold - x0) < 1e-15*(1 + x0))
 	return x0;
     }
-  //fprintf(stderr,"BR: Not converged for z = %e\n",z);
+  //fprintf(stderr,"BR: Not converged for z = %e\n",(double)z);
   std::cerr << "BR: Not converged for z = " << z << std::endl;
   return x0;
 }
