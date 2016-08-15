@@ -184,6 +184,45 @@ const char *xcfun_authors(void)
 }
 
 #ifdef XCFUN_REVERSEAD
+
+std::shared_ptr<DerivativeTensor<size_t, double>> xc_eval_reversead_tensor(
+    xc_functional_obj *f,
+    const double * input) {
+  std::cout << "Evaluating high order derivatives using reversead" << std::endl;
+  if (f->mode == XC_MODE_UNSET)
+    xcint_die("xc_eval() called before a mode was successfully set",0);
+  if (f->vars == XC_VARS_UNSET)
+    xcint_die("xc_eval() called before variables were successfully set",0);
+  if (f->order == -1 && f->mode != XC_POTENTIAL)
+    xcint_die("xc_eval() called before the order was successfully set",0);
+  if (f->mode != XC_PARTIAL_DERIVATIVES) {
+      xcint_die("Only XC_PARTIAL_DERIVATIVES  mode in xc_eval_reversead_tensor()", f->mode);
+  }
+  if (f->order <= 0) {
+	  xcint_die("FIXME: Order should be positive in xc_eval_reversead_tensor",f->order);
+  }
+  int num_ind = xcint_vars[f->vars].len;
+  adouble* in_ad = new ReverseAD::adouble[num_ind];
+  adouble out_ad;
+  double dummy_out;
+  trace_on<double>();
+  for (int i = 0; i < num_ind; i++) {
+    in_ad[i] <<= input[i];
+  }
+  densvars<adouble> d(f, in_ad);
+  out_ad = 0.0;
+  for (int i = 0; i < f->nr_active_functionals; i++) {
+    out_ad += f->settings[f->active_functionals[i]->id] *
+              f->active_functionals[i]->fpr(d);
+  }
+  out_ad >>= dummy_out;
+  std::shared_ptr<TrivialTrace<double>> trace = trace_off<double>();
+  BaseReverseTensor<double> reverse_tensor(trace, f->order);
+  std::shared_ptr<DerivativeTensor<size_t, double>> tensor =
+    reverse_tensor.compute(num_ind, 1);
+  return tensor;
+}
+
 size_t base_index2(int num_ind, size_t row) {
   size_t offset = (row == 0)?0:(num_ind*row-(row*(row-1))/2);
   //std::cout << "row = " << row << ", offset = " << offset << std::endl;
@@ -308,7 +347,7 @@ void xc_eval_reversead(xc_functional_obj *f, const double * input, double *outpu
                  index = l2 + base_index3(num_ind, tind[i][2])
                     + base_index2(num_ind-tind[i][2],tind[i][1]-tind[i][2])
                     + (tind[i][0] - tind[i][1]);
-                 printf("<%d, %d, %d> -> %d\n", tind[i][0], tind[i][1], tind[i][2], index);
+                 //printf("<%d, %d, %d> -> %d\n", tind[i][0], tind[i][1], tind[i][2], index);
                  output[index] = values[i];
                }
              }
