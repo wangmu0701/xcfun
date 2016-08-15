@@ -305,6 +305,11 @@ void xc_eval_reversead(xc_functional_obj *f, const double * input, double *outpu
                    tensor = third.compute(num_ind, 1);
                  }
                  break;
+               default:
+                 {
+                   BaseReverseTensor<double> reverse_mode(trace, f->order);
+                   tensor = reverse_mode.compute(num_ind, 1);
+                 }
              }
              output[0] = dummy_out;
              size_t index;
