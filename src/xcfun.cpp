@@ -2,6 +2,8 @@
 #include <cstdlib>
 #include <cstring>
 #include "xcint.hpp"
+#include <memory>
+
 /*
 #ifdef XCFUN_REVERSEAD
 #include "reversead/reversead.hpp"
@@ -187,7 +189,8 @@ const char *xcfun_authors(void)
 
 std::shared_ptr<DerivativeTensor<size_t, double>> xc_eval_reversead_tensor(
     xc_functional_obj *f,
-    const double * input) {
+    const double * input,
+    size_t f_order) {
   std::cout << "Evaluating high order derivatives using reversead" << std::endl;
   if (f->mode == XC_MODE_UNSET)
     xcint_die("xc_eval() called before a mode was successfully set",0);
@@ -198,8 +201,8 @@ std::shared_ptr<DerivativeTensor<size_t, double>> xc_eval_reversead_tensor(
   if (f->mode != XC_PARTIAL_DERIVATIVES) {
       xcint_die("Only XC_PARTIAL_DERIVATIVES  mode in xc_eval_reversead_tensor()", f->mode);
   }
-  if (f->order <= 0) {
-	  xcint_die("FIXME: Order should be positive in xc_eval_reversead_tensor",f->order);
+  if (f_order <= 0) {
+	  xcint_die("FIXME: Order should be positive in xc_eval_reversead_tensor",f_order);
   }
   int num_ind = xcint_vars[f->vars].len;
   adouble* in_ad = new ReverseAD::adouble[num_ind];
@@ -217,7 +220,7 @@ std::shared_ptr<DerivativeTensor<size_t, double>> xc_eval_reversead_tensor(
   }
   out_ad >>= dummy_out;
   std::shared_ptr<TrivialTrace<double>> trace = trace_off<double>();
-  BaseReverseTensor<double> reverse_tensor(trace, f->order);
+  BaseReverseTensor<double> reverse_tensor(trace, f_order);
   std::shared_ptr<DerivativeTensor<size_t, double>> tensor =
     reverse_tensor.compute(num_ind, 1);
   return tensor;

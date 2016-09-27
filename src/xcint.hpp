@@ -115,7 +115,7 @@ void xcint_assure_setup();
 evaluator xcint_get_evaluator(enum xc_mode mode,
 			      enum xc_vars vars,
 			      int order);
-extern "C"
+//extern "C"
 void xcint_die(const char *message, int code);
 int xcint_write_fortran_module();
 

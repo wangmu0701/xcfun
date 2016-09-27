@@ -4,12 +4,21 @@
 #define XCFUN_API_VERSION 2
 
 #ifdef __cplusplus
-extern "C" {
+//extern "C" {
 #endif
 
 #ifndef XC_MAX_ORDER
 #define XC_MAX_ORDER 3
 #endif
+
+#ifdef XCFUN_REVERSEAD
+//#include "reversead/reversead.hpp"
+#include <memory>
+namespace ReverseAD {
+template <typename LocType, typename Base> class DerivativeTensor;
+}
+#endif
+
 
 // Used for regularizing input
 #define XC_TINY_DENSITY 1e-14
@@ -123,6 +132,7 @@ enum xc_mode
   // Length of the result[] argument to eval()
   int xc_output_length(xc_functional fun);
 
+
   // Evaluating xc_eval using ReverseAD
   void xc_eval_reversead(xc_functional fun,
 	       const double *density,
@@ -147,8 +157,13 @@ enum xc_mode
   int xc_derivative_index(xc_functional fun, const int derivative[]);
 
 #ifdef __cplusplus
-} // End of extern "C"
+//} // End of extern "C"
 #endif
+
+#ifdef XCFUN_REVERSEAD
+  std::shared_ptr<ReverseAD::DerivativeTensor<size_t, double>> xc_eval_reversead_tensor(xc_functional fun, const double * density, size_t f_order);
+#endif
+
 
 // Derivative indices into xc_eval output in partial derivative mode
 

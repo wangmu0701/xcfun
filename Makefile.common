@@ -19,9 +19,6 @@ genfortran: src/genfortran.cpp lib/libxcfun.a
 testall: test/testall.c lib/libxcfun.a
 	$(CC) $(CFLAGS) $< -o $@ -lxcfun -lm $(LIBS)
 
-reversead: test/reversead.cpp lib/libxcfun.a
-	$(CXX) $(CFLAGS) $< -o $@ -lxcfun -lm $(LIBS)
-
 example: test/example.c lib/libxcfun.a
 	$(CXX) $(CFLAGS) $< -o $@ -lxcfun -lm $(LIBS)
 
