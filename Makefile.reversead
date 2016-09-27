@@ -3,13 +3,14 @@
 # To compile without -lstdc++ needed use (g++) -fno-rtti -fno-exceptions
 # -fno-threadsafe-statics. Note the last option.
 
+REVERSEADPATH=$(HOME)/packages/reversead
 # C++ compiler and flags
 CXX=g++
 CC=g++
-CFLAGS=-g -Wall -O3 -DXCFUN_REVERSEAD -std=c++11 -I$(HOME)/reversead/include -fpermissive # -ffast-math  -DNDEBUG
+CFLAGS=-g -Wall -O0 -DXCFUN_REVERSEAD -std=c++11 -I$(REVERSEADPATH)/include -fpermissive # -ffast-math  -DNDEBUG
 CXXFLAGS=$(CFLAGS) #-fno-rtti -fno-exceptions
 
-LIBS=-L$(HOME)/reversead/lib -lreversead
+LIBS=-L$(REVERSEADPATH)/lib -lreversead
 
 # Fortran compiler and flags (used in fortran/kernel_example.F90)
 FC=gfortran

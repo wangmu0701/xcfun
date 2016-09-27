@@ -90,7 +90,7 @@ int FSYM(xcdind) FCSYM(XCDIND)(fortran_int_t *fun, const fortran_int_t *derivati
 fortran_int_t FSYM(xcevse) FCSYM(XCTRYV)(fortran_int_t *fun, const fortran_int_t *vars, const fortran_int_t *mode, const fortran_int_t *order)
 {
   assert(*fun >= 0 && *fun < MAX_FORTRAN_FUNCTIONALS);
-  return xc_eval_setup(fortran_functionals[*fun], *vars, *mode, *order);
+  return xc_eval_setup(fortran_functionals[*fun], static_cast<xc_vars>(*vars), static_cast<xc_mode>(*mode), *order);
 }
 
 static void str2ints(fortran_int_t ints[], fortran_int_t len, const char *s)

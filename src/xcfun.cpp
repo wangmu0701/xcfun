@@ -243,7 +243,7 @@ size_t base_index3(int num_ind, size_t row) {
   return offset;
 }
 void xc_eval_reversead(xc_functional_obj *f, const double * input, double *output) {
-  std::cout << "Evaluating using reversead" << std::endl;
+  //std::cout << "Evaluating using reversead" << std::endl;
   if (f->mode == XC_MODE_UNSET)
     xcint_die("xc_eval() called before a mode was successfully set",0);
   if (f->vars == XC_VARS_UNSET)
