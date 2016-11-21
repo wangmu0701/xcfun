@@ -8,7 +8,7 @@
 #endif
 
 #ifndef XC_MAX_ORDER
-#define XC_MAX_ORDER 3
+#define XC_MAX_ORDER 5
 #endif
 
 #ifdef XCFUN_REVERSEAD

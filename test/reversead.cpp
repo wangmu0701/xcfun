@@ -13,6 +13,7 @@ using namespace ReverseAD;
 
 #define TOL 1.0e-8
 
+
 void test_on(int func_len, char (*func_name)[20], double* func_weight) {
   xc_functional fun = xc_new_functional();
 
@@ -28,10 +29,12 @@ void test_on(int func_len, char (*func_name)[20], double* func_weight) {
     xc_set(fun, func_name[i], func_weight[i]);
   }
 
+  size_t f_order = 5;
+
   xc_eval_setup(fun,
         XC_A_B_2ND_TAYLOR,
         XC_PARTIAL_DERIVATIVES,
-        3);
+        f_order);
 
   nout = xc_output_length(fun);
 
@@ -45,23 +48,26 @@ void test_on(int func_len, char (*func_name)[20], double* func_weight) {
   std::cout << "Taylor method time = "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
-            
+/*            
   t1 = std::chrono::high_resolution_clock::now();
   xc_eval_reversead(fun,d_elements,output_ad);
   t2 = std::chrono::high_resolution_clock::now();
   std::cout << "ReverseAD time = "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
-
-  size_t f_order = 4;
+*/
   t1 = std::chrono::high_resolution_clock::now();
   std::shared_ptr<DerivativeTensor<size_t, double>> tensor = xc_eval_reversead_tensor(fun, d_elements, f_order);
   t2 = std::chrono::high_resolution_clock::now();
   std::cout << "ReverseAD::Tensor["<<f_order<<"] time = "
             << std::chrono::duration_cast<std::chrono::milliseconds>(t2-t1).count()
             << " milliseconds" << std::endl;
-  
-
+  size_t size;
+  size_t** tind;
+  double* values;
+  tensor->get_internal_coordinate_list(0, f_order, &size, &tind, &values);  
+  std::cout << "NNZ in tensor = " << size << std::endl;
+/*
   bool isWrong = false;
   for (i=0;i<nout;i++) {
     //printf("%.8f == %.8f\n", output_ad[i], output[i]);
@@ -74,7 +80,7 @@ void test_on(int func_len, char (*func_name)[20], double* func_weight) {
   } else {
     std::cout << "Results wrong!" << std::endl;
   }
-
+*/
   free(output);
   free(output_ad);
   xc_free_functional(fun);  

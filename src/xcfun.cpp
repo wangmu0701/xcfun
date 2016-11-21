@@ -372,6 +372,131 @@ void xc_eval_reversead(xc_functional_obj *f, const double * input, double *outpu
 }
 #endif
 
+void get_3_tensor(xc_functional_obj *f, const double *input,
+                  double *output, int offset) {
+  typedef ctaylor<ireal_t,3> ttype;
+  int inlen = xcint_vars[f->vars].len;
+  ttype in[XC_MAX_INVARS], out = 0;
+  for (int i=0;i<inlen;i++) {
+    in[i] = input[i];
+  }
+  for (int i=0;i<inlen;i++) {
+    in[i].set(VAR0,1);
+    for (int j=i;j<inlen;j++) {
+      in[j].set(VAR1,1);
+      for (int k=j;k<inlen;k++) {
+	in[k].set(VAR2,1);
+	densvars<ttype> d(f,in);
+	out = 0;
+	for (int n=0;n<f->nr_active_functionals;n++) {
+	  out += f->settings[f->active_functionals[n]->id]
+	    * f->active_functionals[n]->fp3(d); 
+        }
+	output[offset++] = out.get(VAR0|VAR1|VAR2); //Third derivative
+	in[k].set(VAR2,0); 
+      }
+    in[j].set(VAR1,0); 
+    }
+  in[i] = input[i];
+  }
+}
+
+void get_5_tensor(xc_functional_obj *f, const double *input,
+                  double *output, int offset) {
+  typedef ctaylor<ireal_t,5> ttype;
+  int inlen = xcint_vars[f->vars].len;
+  ttype in[XC_MAX_INVARS], out = 0;
+  for (int i=0;i<inlen;i++) {
+    in[i] = input[i];
+  }
+  for (int i=0;i<inlen;i++) {
+    in[i].set(VAR0,1);
+    for (int j=i;j<inlen;j++) {
+      in[j].set(VAR1,1);
+      for (int k=j;k<inlen;k++) {
+	in[k].set(VAR2,1);
+        for (int l=k;l<inlen;l++) {
+  	  in[l].set(VAR3,1);
+          for (int s=l;s<inlen;s++) {
+            in[s].set(VAR4,1);
+	    densvars<ttype> d(f,in);
+	    out = 0;
+	    for (int n=0;n<f->nr_active_functionals;n++) {
+	      out += f->settings[f->active_functionals[n]->id]
+	        * f->active_functionals[n]->fp5(d); 
+            }
+	    output[offset++] = out.get(VAR0|VAR1|VAR2|VAR3|VAR4); //fourth derivative
+            in[s].set(VAR4,0);
+          }
+          in[l].set(VAR3, 0);
+        }
+	in[k].set(VAR2,0); 
+      }
+    in[j].set(VAR1,0); 
+    }
+  in[i] = input[i];
+  }
+}
+
+void get_4_tensor(xc_functional_obj *f, const double *input,
+                  double *output, int offset) {
+  typedef ctaylor<ireal_t,4> ttype;
+  int inlen = xcint_vars[f->vars].len;
+  ttype in[XC_MAX_INVARS], out = 0;
+  for (int i=0;i<inlen;i++) {
+    in[i] = input[i];
+  }
+  for (int i=0;i<inlen;i++) {
+    in[i].set(VAR0,1);
+    for (int j=i;j<inlen;j++) {
+      in[j].set(VAR1,1);
+      for (int k=j;k<inlen;k++) {
+	in[k].set(VAR2,1);
+        for (int l=k;l<inlen;l++) {
+  	  in[l].set(VAR3,1);
+	  densvars<ttype> d(f,in);
+	  out = 0;
+	  for (int n=0;n<f->nr_active_functionals;n++) {
+	    out += f->settings[f->active_functionals[n]->id]
+	      * f->active_functionals[n]->fp4(d); 
+          }
+	  output[offset++] = out.get(VAR0|VAR1|VAR2|VAR3); //fourth derivative
+          in[l].set(VAR3, 0);
+        }
+	in[k].set(VAR2,0); 
+      }
+    in[j].set(VAR1,0); 
+    }
+  in[i] = input[i];
+  }
+}
+
+void get_2_tensor(xc_functional_obj *f, const double *input, double *output) {
+  typedef ctaylor<ireal_t,2> ttype;
+  int inlen = xcint_vars[f->vars].len;
+  ttype in[XC_MAX_INVARS], out = 0;
+  for (int i=0;i<inlen;i++)
+    in[i] = input[i];
+  int k = inlen+1;
+  for (int i=0;i<inlen;i++) {
+    in[i].set(VAR0,1);
+    for (int j=i;j<inlen;j++) {
+      in[j].set(VAR1,1);
+      densvars<ttype> d(f,in);
+      out = 0;
+      for (int n=0;n<f->nr_active_functionals;n++) {
+        out += f->settings[f->active_functionals[n]->id]
+	      * f->active_functionals[n]->fp2(d); 
+      }
+      output[k++] = out.get(VAR0|VAR1); //Second derivative
+      in[j].set(VAR1,0); // slightly pessimized
+    }
+    output[i+1] = out.get(VAR0); //First derivative
+    in[i] = input[i];
+  }
+  output[0] = out.get(CNST); //Energy
+}
+
 void xc_eval(xc_functional_obj *f, const double *input, double *output)
 {
   if (f->mode == XC_MODE_UNSET)
@@ -446,6 +571,37 @@ void xc_eval(xc_functional_obj *f, const double *input, double *output)
 	  }
 	  break;
 #endif
+       case 5:
+         {
+	   int inlen = xcint_vars[f->vars].len;
+	   int offset = 1 + inlen + (inlen*(inlen+1))/2;
+           get_3_tensor(f, input, output, offset);
+           get_4_tensor(f, input, output, offset);
+           get_5_tensor(f, input, output, offset);
+           get_2_tensor(f, input, output);
+         }
+         break;
+       case 4:
+         {
+	   int inlen = xcint_vars[f->vars].len;
+	   int offset = 1 + inlen + (inlen*(inlen+1))/2;
+           get_3_tensor(f, input, output, offset);
+           get_4_tensor(f, input, output, offset);
+           get_2_tensor(f, input, output);
+         }
+         break;
+       case 3:
+         {
+	   int inlen = xcint_vars[f->vars].len;
+	   int offset = 1 + inlen + (inlen*(inlen+1))/2;
+           get_3_tensor(f, input, output, offset);
+           get_2_tensor(f, input, output);
+         }
+         break;
+       case 2:
+         get_2_tensor(f, input, output);
+         break;
+/*
 #if XC_MAX_ORDER >= 2
 #if XC_MAX_ORDER >= 3
 	  // Do the third order derivatives here, then use the second order code. This is getting expensive..
@@ -509,6 +665,7 @@ void xc_eval(xc_functional_obj *f, const double *input, double *output)
 	  }
 	  break;
 #endif
+*/
 	default:
 	  xcint_die("FIXME: Order too high for partial derivatives in xc_eval",f->order);
 	}
@@ -840,7 +997,7 @@ int xc_eval_setup(xc_functional fun,
       return XC_EVARS;
     }
   if ((order < 0 || order > XC_MAX_ORDER) ||
-      (mode == XC_PARTIAL_DERIVATIVES && order > 4))
+      (mode == XC_PARTIAL_DERIVATIVES && order > 5))
     return XC_EORDER;
   if (mode == XC_POTENTIAL)
     {
