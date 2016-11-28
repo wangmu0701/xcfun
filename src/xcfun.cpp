@@ -10,6 +10,9 @@
 using namespace ReverseAD;
 #endif
 */
+#ifdef XCFUN_REVERSEAD
+#include <fstream>
+#endif
 
 xc_functional xc_new_functional_not_macro(int api_version)
 {
@@ -186,6 +189,254 @@ const char *xcfun_authors(void)
 }
 
 #ifdef XCFUN_REVERSEAD
+
+
+void get_3_tensor_sp(xc_functional_obj *f, const double *input,
+                    double *output, int offset,
+                    std::ifstream& inf) {
+  typedef ctaylor<ireal_t,3> ttype;
+  int inlen = xcint_vars[f->vars].len;
+  ttype in[XC_MAX_INVARS], out = 0;
+  for (int i=0;i<inlen;i++) {
+    in[i] = input[i];
+  }
+  size_t order;
+  size_t size;
+  size_t t[3];
+  inf >> order >> size;
+  assert(order == 3);
+  for (int i = 0; i < size; i++) {
+    inf >> t[0] >> t[1] >> t[2];
+    in[t[0]].set(VAR0, 1);
+    in[t[1]].set(VAR1, 1);
+    in[t[2]].set(VAR2, 1);
+    densvars<ttype> d(f,in);
+    out = 0;
+    for (int n=0;n<f->nr_active_functionals;n++) {
+      out += f->settings[f->active_functionals[n]->id]
+	     * f->active_functionals[n]->fp3(d); 
+    }
+    output[offset++] = out.get(VAR0|VAR1|VAR2); //Third derivative
+    in[t[0]] = input[t[0]];
+    in[t[1]] = input[t[1]];
+    in[t[2]] = input[t[2]];
+  }
+}
+
+void get_5_tensor_sp(xc_functional_obj *f, const double *input,
+                     double *output, int offset,
+                     std::ifstream& inf) {
+  typedef ctaylor<ireal_t,5> ttype;
+  int inlen = xcint_vars[f->vars].len;
+  ttype in[XC_MAX_INVARS], out = 0;
+  for (int i=0;i<inlen;i++) {
+    in[i] = input[i];
+  }
+  size_t order;
+  size_t size;
+  size_t t[5];
+  inf >> order >> size;
+  assert(order == 5);
+  for (int i = 0; i < size; i++) {
+    inf >> t[0] >> t[1] >> t[2] >> t[3] >> t[4];
+    in[t[0]].set(VAR0, 1);
+    in[t[1]].set(VAR1, 1);
+    in[t[2]].set(VAR2, 1);
+    in[t[3]].set(VAR3, 1);
+    in[t[4]].set(VAR4, 1);
+    densvars<ttype> d(f,in);
+    out = 0;
+    for (int n=0;n<f->nr_active_functionals;n++) {
+      out += f->settings[f->active_functionals[n]->id]
+	     * f->active_functionals[n]->fp5(d); 
+    }
+    output[offset++] = out.get(VAR0|VAR1|VAR2|VAR3|VAR4); //Third derivative
+    in[t[0]] = input[t[0]];
+    in[t[1]] = input[t[1]];
+    in[t[2]] = input[t[2]];
+    in[t[3]] = input[t[3]];
+    in[t[4]] = input[t[4]];
+  }
+}
+
+void get_4_tensor_sp(xc_functional_obj *f, const double *input,
+                     double *output, int offset,
+                     std::ifstream& inf) {
+  typedef ctaylor<ireal_t,4> ttype;
+  int inlen = xcint_vars[f->vars].len;
+  ttype in[XC_MAX_INVARS], out = 0;
+  for (int i=0;i<inlen;i++) {
+    in[i] = input[i];
+  }
+  size_t order;
+  size_t size;
+  size_t t[4];
+  inf >> order >> size;
+  assert(order == 4);
+  for (int i = 0; i < size; i++) {
+    inf >> t[0] >> t[1] >> t[2] >> t[3];
+    in[t[0]].set(VAR0, 1);
+    in[t[1]].set(VAR1, 1);
+    in[t[2]].set(VAR2, 1);
+    in[t[3]].set(VAR3, 1);
+    densvars<ttype> d(f,in);
+    out = 0;
+    for (int n=0;n<f->nr_active_functionals;n++) {
+      out += f->settings[f->active_functionals[n]->id]
+	     * f->active_functionals[n]->fp4(d); 
+    }
+    output[offset++] = out.get(VAR0|VAR1|VAR2|VAR3); //Third derivative
+    in[t[0]] = input[t[0]];
+    in[t[1]] = input[t[1]];
+    in[t[2]] = input[t[2]];
+    in[t[3]] = input[t[3]];
+  }
+}
+
+void get_2_tensor_sp(xc_functional_obj *f, const double *input,
+                     double *output, std::ifstream& inf) {
+  typedef ctaylor<ireal_t,2> ttype;
+  int inlen = xcint_vars[f->vars].len;
+  ttype in[XC_MAX_INVARS], out = 0;
+  for (int i=0;i<inlen;i++)
+    in[i] = input[i];
+
+  int offset = inlen+1;
+  size_t order;
+  size_t size;
+  size_t t[2];
+  inf >> order >> size;
+  assert(order == 2);
+  for (int i = 0; i < size; i++) {
+    inf >> t[0] >> t[1];
+    in[t[0]].set(VAR0, 1);
+    in[t[1]].set(VAR1, 1);
+    densvars<ttype> d(f,in);
+    out = 0;
+    for (int n=0;n<f->nr_active_functionals;n++) {
+      out += f->settings[f->active_functionals[n]->id]
+	     * f->active_functionals[n]->fp2(d); 
+    }
+    output[offset++] = out.get(VAR0|VAR1); // Second derivative
+    in[t[0]] = input[t[0]];
+    in[t[1]] = input[t[1]];
+  }
+}
+
+void get_1_tensor_sp(xc_functional_obj *f, const double *input,
+                     double *output) {
+  int inlen = xcint_vars[f->vars].len;
+  typedef ctaylor<ireal_t,2> ttype2;
+  ttype2 in2[XC_MAX_INVARS], out2 = 0;
+  for (int i=0;i<inlen;i++)
+    in2[i] = input[i];
+  for (int j=0;j<inlen/2;j++) {
+    in2[2*j].set(VAR0,1);
+    in2[2*j+1].set(VAR1,1);
+    densvars<ttype2> d(f,in2);
+    out2 = 0;
+      for (int i=0;i<f->nr_active_functionals;i++)
+        out2 += f->settings[f->active_functionals[i]->id]
+                * f->active_functionals[i]->fp2(d);
+    in2[2*j] = input[2*j];
+    in2[2*j+1] = input[2*j+1];
+    output[2*j+1] = out2.get(VAR0); // First derivatives
+    output[2*j+2] = out2.get(VAR1); // First derivatives
+  }
+  output[0] = out2.get(CNST); // Energy
+  if (inlen & 1) {
+    typedef ctaylor<ireal_t,1> ttype;
+    int inlen = xcint_vars[f->vars].len;
+    ttype in[XC_MAX_INVARS], out = 0;
+    for (int i=0;i<inlen;i++)
+      in[i] = input[i];
+    int j = inlen-1;
+    in[j].set(VAR0,1);
+    densvars<ttype> d(f,in);
+    out = 0;
+    for (int i=0;i<f->nr_active_functionals;i++)
+      out += f->settings[f->active_functionals[i]->id]
+             * f->active_functionals[i]->fp1(d);
+    in[j] = input[j];
+    output[j+1] = out.get(VAR0); // First derivatives
+  }
+}
+
+void xc_eval_sparsity(xc_functional_obj *f, const double *input, double *output)
+{
+  if (f->mode == XC_PARTIAL_DERIVATIVES)
+    {
+      switch (f->order)
+	{
+	case 0:
+	  {
+	    typedef ctaylor<ireal_t,0> ttype;
+	    int inlen = xcint_vars[f->vars].len;
+	    ttype in[XC_MAX_INVARS], out = 0;
+	    for (int i=0;i<inlen;i++)
+	      in[i] = input[i];
+	    densvars<ttype> d(f,in);
+	    for (int i=0;i<f->nr_active_functionals;i++)
+	      out +=  f->settings[f->active_functionals[i]->id]
+		      * f->active_functionals[i]->fp0(d);
+	    output[0] = out.get(CNST);
+	  }
+	  break;
+	case 1:
+	  {
+            get_1_tensor_sp(f, input, output);
+	  }
+	  break;
+       case 5:
+         {
+           std::ifstream inf("sparsity.pat", std::ifstream::in);
+	   int inlen = xcint_vars[f->vars].len;
+	   int offset = 1 + inlen + (inlen*(inlen+1))/2;
+           get_3_tensor_sp(f, input, output, offset, inf);
+           get_4_tensor_sp(f, input, output, offset, inf);
+           get_5_tensor_sp(f, input, output, offset, inf);
+           get_2_tensor_sp(f, input, output, inf);
+           get_1_tensor_sp(f, input, output);
+           inf.close();
+         }
+         break;
+       case 4:
+         {
+           std::ifstream inf("sparsity.pat", std::ifstream::in);
+	   int inlen = xcint_vars[f->vars].len;
+	   int offset = 1 + inlen + (inlen*(inlen+1))/2;
+           get_3_tensor_sp(f, input, output, offset, inf);
+           get_4_tensor_sp(f, input, output, offset, inf);
+           get_2_tensor_sp(f, input, output, inf);
+           get_1_tensor_sp(f, input, output);
+           inf.close();
+         }
+         break;
+       case 3:
+         {
+           std::ifstream inf("sparsity.pat", std::ifstream::in);
+	   int inlen = xcint_vars[f->vars].len;
+	   int offset = 1 + inlen + (inlen*(inlen+1))/2;
+           get_3_tensor_sp(f, input, output, offset, inf);
+           get_2_tensor_sp(f, input, output, inf);
+           get_1_tensor_sp(f, input, output);
+           inf.close();
+         }
+         break;
+       case 2:
+         {
+           std::ifstream inf("sparsity.pat", std::ifstream::in);
+           get_2_tensor_sp(f, input, output, inf);
+           get_1_tensor_sp(f, input, output);
+           inf.close();
+         }
+         break;
+     }
+   }
+}
+
+
+
 
 std::shared_ptr<DerivativeTensor<size_t, double>> xc_eval_reversead_tensor(
     xc_functional_obj *f,

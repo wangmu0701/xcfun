@@ -162,6 +162,7 @@ enum xc_mode
 
 #ifdef XCFUN_REVERSEAD
   std::shared_ptr<ReverseAD::DerivativeTensor<size_t, double>> xc_eval_reversead_tensor(xc_functional fun, const double * density, size_t f_order);
+  void xc_eval_sparsity(xc_functional fun, const double *density, double *result);
 #endif
 
 
