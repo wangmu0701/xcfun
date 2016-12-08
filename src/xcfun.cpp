@@ -456,6 +456,7 @@ std::shared_ptr<DerivativeTensor<size_t, double>> xc_eval_reversead_tensor(
 	  xcint_die("FIXME: Order should be positive in xc_eval_reversead_tensor",f_order);
   }
   int num_ind = xcint_vars[f->vars].len;
+  std::cout << "num of ind = " << num_ind << std::endl;
   adouble* in_ad = new ReverseAD::adouble[num_ind];
   adouble out_ad;
   double dummy_out;

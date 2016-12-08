@@ -32,7 +32,8 @@ void test_on(int func_len, char (*func_name)[20], double* func_weight) {
   }
 
   xc_eval_setup(fun,
-        XC_A_B_2ND_TAYLOR,
+//        XC_A_B_2ND_TAYLOR, // 20 ind
+        XC_A_B_AX_AY_AZ_BX_BY_BZ, // 8 ind
         XC_PARTIAL_DERIVATIVES,
         f_order);
 
@@ -129,11 +130,25 @@ int main(int argc, char* argv[]) {
       dump_sparsity = true;
     }
   }
-  char func_name[10][20] = {"lda", "blyp", "pbe", "bp86", "kt1", "kt2", "kt3",
-                           "pbe0", "b3lyp", "b97"};
+/*
+  char func_name[10][20] = {"lda", "blyp", "pbe", "bp86", "kt1",
+                            "kt2", "kt3", "pbe0", "b3lyp", "b97"};
+  char func_name[10][20] = {"camb3lyp", "vwn", "vwn5", "vwn3", "svwn",
+                            "svwn5", "svwn3", "becke", "slater", "olyp"};
+
+  char func_name[10][20] = {"lyp", "B88X", "LDAX", "PBEX", "KT3X",
+                            "OPTX", "camcompx", "tfk", "tw", "lda"};
+
   double func_weight[10] = {0.1, 0.2, 0.3, 0.4, 0.5, 0.6, 0.7, 0.8, 0.9, 1.0};
 
   test_on(10, func_name, func_weight);
+*/
 
+  //char func_name[8][20]={"lda","blyp","pbe","bp86","kt1","kt2","kt3","pbe0"};
+  //char func_name[8][20]={"b3lyp","b97","camb3lyp","vwn","vwn5","vwn3","svwn","svwn5"};
+  //char func_name[8][20]={"svwn3","becke","slater","olyp","lyp","B88X","LDAX","PBEX"};
+  char func_name[8][20]={"KT3X","OPTX","camcompx","tfk","tw","lda","vwn","svwn"};
+  double func_weight[8]={1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0};
+  test_on(8, func_name, func_weight);
   return EXIT_SUCCESS;
 }
