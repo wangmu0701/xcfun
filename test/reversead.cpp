@@ -13,8 +13,8 @@ using namespace ReverseAD;
 
 #define TOL 1.0e-8
 
-bool dump_sparsity = false;
-size_t f_order = 4;
+bool dump_sparsity = true;
+size_t f_order = 5;
 
 void test_on(int func_len, char (*func_name)[20], double* func_weight) {
   xc_functional fun = xc_new_functional();
@@ -144,10 +144,10 @@ int main(int argc, char* argv[]) {
   test_on(10, func_name, func_weight);
 */
 
-  //char func_name[8][20]={"lda","blyp","pbe","bp86","kt1","kt2","kt3","pbe0"};
+  char func_name[8][20]={"lda","blyp","pbe","bp86","kt1","kt2","kt3","pbe0"};
   //char func_name[8][20]={"b3lyp","b97","camb3lyp","vwn","vwn5","vwn3","svwn","svwn5"};
   //char func_name[8][20]={"svwn3","becke","slater","olyp","lyp","B88X","LDAX","PBEX"};
-  char func_name[8][20]={"KT3X","OPTX","camcompx","tfk","tw","lda","vwn","svwn"};
+  //char func_name[8][20]={"KT3X","OPTX","camcompx","tfk","tw","lda","vwn","svwn"};
   double func_weight[8]={1.0,2.0,3.0,4.0,5.0,6.0,7.0,8.0};
   test_on(8, func_name, func_weight);
   return EXIT_SUCCESS;

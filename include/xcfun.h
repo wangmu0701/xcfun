@@ -165,6 +165,13 @@ enum xc_mode
   void xc_eval_sparsity(xc_functional fun, const double *density, double *result);
 #endif
 
+#ifdef XCFUN_RAPSODIA
+  void xc_eval_rapsodia(xc_functional fun, const double *density, double *result);
+#endif
+
+#ifdef XCFUN_ADOLC
+  void xc_eval_adolc(xc_functional fun, const double *density, double *result);
+#endif
 
 // Derivative indices into xc_eval output in partial derivative mode
 

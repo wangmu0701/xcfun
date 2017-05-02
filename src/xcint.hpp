@@ -14,6 +14,14 @@
 using namespace ReverseAD;
 #endif
 
+#ifdef XCFUN_RAPSODIA
+#include "RAinclude.ipp"
+#endif
+
+#ifdef XCFUN_ADOLC
+#include "adolc/adolc.h"
+#endif
+
 #define XC_MAX_ALIASES 60
 #define MAX_ALIAS_TERMS 10
 #define XC_MAX_INVARS 20
@@ -67,6 +75,13 @@ struct functional_data
 #ifdef XCFUN_REVERSEAD
   adouble (*fpr)(const densvars<adouble>&);
 #endif
+#ifdef XCFUN_RAPSODIA
+  RAfloatD (*fpr)(const densvars<RAfloatD>&);
+#endif
+#ifdef XCFUN_ADOLC
+  adouble (*fpr)(const densvars<adouble>&);
+#endif
+
   enum xc_vars test_vars;
   enum xc_mode test_mode;
   int test_order;

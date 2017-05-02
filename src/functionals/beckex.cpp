@@ -99,7 +99,8 @@ FUNCTIONAL(XC_BECKEX) = {
   2,
   1e-11,
   {0.39E+02, 0.38E+02, 0.81E+06, 0.82E+06,0.82E+06},
-  {	-0.277987329958E+03,
+  {
+	-0.277987329958E+03,
 
 	-0.385951846654E+01,
 	-0.381309494319E+01,
@@ -137,11 +138,13 @@ FUNCTIONAL(XC_BECKECORRX) = {
   XC_PARTIAL_DERIVATIVES,
   2,
   1e-11,
-  { 0.39e+02,
+  {
+     0.39e+02,
     0.38e+02,
     0.81e+06,
     0.82e+06,
-    0.82e+06},
+    0.82e+06,
+  },
   {
 //     radovan: reference data obtained from *.c implementation in DIRAC
     -3.603918211981e+01, // 00000

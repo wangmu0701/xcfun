@@ -14,6 +14,20 @@ using namespace ReverseAD;
 #include <fstream>
 #endif
 
+#ifdef XCFUN_ADOLC
+#include <fstream>
+#include "adolc/adolc.h"
+
+#define TAG 1
+#endif
+
+#ifdef XCFUN_RAPSODIA
+#include <iostream>
+
+#include "RAinclude.ipp"
+#include "HigherOrderTensor.hpp"
+#endif
+
 xc_functional xc_new_functional_not_macro(int api_version)
 {
   xcint_assure_setup();
@@ -188,9 +202,89 @@ const char *xcfun_authors(void)
     "Michael Seth\n";
 }
 
+#ifdef XCFUN_RAPSODIA
+void xc_eval_rapsodia(xc_functional_obj *f, const double *input,
+                  double *output) {
+  unsigned short n = 8;
+  unsigned short o = 3;
+  HigherOrderTensor T(n, o); 
+  int dirs = T.getDirectionCount();
+  std::cout << "Number of directions: " << dirs << std::endl;
+  RAfloatD* x = new RAfloatD[n];
+  Matrix<unsigned int> SeedMatrix = T.getSeedMatrix();
+  for (int i = 0; i < n; i++) {
+    x[i] = input[i];
+  }
+  for (int i = 1; i <= dirs; i++) {
+    for (int j = 1; j <=n; j++) {
+      x[j-1].set(i, 1, SeedMatrix[j-1][i-1]);
+    }
+  }
+  densvars<RAfloatD> d(f, x);
+  // function evaluation
+  RAfloatD  out = 0;
+  for (int n=0;n<f->nr_active_functionals;n++) {
+    out += f->settings[f->active_functionals[n]->id]
+	   * f->active_functionals[n]->fpr(d); 
+  }
+  Matrix<double> TaylorCoefficients(o, dirs);
+  for (int i = 1; i <=o; i++) {
+    for (int j = 1; j <= dirs; j++) {
+      TaylorCoefficients[i-1][j-1] = out.get(j,i);
+    }
+  }
+  T.setTaylorCoefficients(TaylorCoefficients);
+  int offset = 0;
+  for (int k = 1; k <= o; k++) {
+    std::vector<double> compressedTensor = T.getCompressedTensor(k);
+    for (int i = 1; i <= dirs; i++) {
+      output[offset++] = compressedTensor[i-1];
+    }
+  }
+}
+#endif // RAPSODIA
+
+#ifdef XCFUN_ADOLC
+void xc_eval_adolc(xc_functional_obj *f, const double *input,
+                  double *output) {
+  int n = 8;
+  int order = 3;
+  adouble* xad = new adouble[n];
+  double y;
+  trace_on(TAG);
+  for (int i = 0; i < n; i++) {
+    xad[i] <<= input[i];
+  }
+  densvars<adouble> d(f, xad);
+  // function evaluation
+  adouble yad = 0;
+  for (int n=0;n<f->nr_active_functionals;n++) {
+    yad += f->settings[f->active_functionals[n]->id]
+	   * f->active_functionals[n]->fpr(d); 
+  }
+  yad >>= y;
+  trace_off();
+  double** seed = new double*[n];
+    for (int i = 0; i < n; i++) {
+      seed[i] = new double[n];
+      for (int j = 0; j < n; j++) {
+        seed[i][j] = ((i==j)?1.0:0.0);
+      }
+    }
+    int dim = binomi(n+order, order);
+    double** tensorhelp = myalloc2(1, dim);
+    tensor_eval(TAG, 1, n, order, n, input, tensorhelp, seed);
+    for (int i = 0; i < n; i++) {
+      delete[] seed[i];
+    }
+    delete[] seed;
+    myfree2(tensorhelp);
+
+}
+#endif // ADOLC
+
+
 #ifdef XCFUN_REVERSEAD
-
-
 void get_3_tensor_sp(xc_functional_obj *f, const double *input,
                     double *output, int offset,
                     std::ifstream& inf) {

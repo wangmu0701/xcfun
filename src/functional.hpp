@@ -13,8 +13,22 @@
 #define ENERGY_FUNCTION(FUN) FOR_EACH(XC_MAX_ORDER,EN,FUN)\
                              FUN<adouble>,
 #else
+#ifdef XCFUN_RAPSODIA
+#define ENERGY_FUNCTION(FUN) FOR_EACH(XC_MAX_ORDER,EN,FUN)\
+                             FUN<RAfloatD>,
+#else
+#ifdef XCFUN_ADOLC
+#define ENERGY_FUNCTION(FUN) FOR_EACH(XC_MAX_ORDER,EN,FUN)\
+                             FUN<adouble>,
+#else
 #define ENERGY_FUNCTION(FUN) FOR_EACH(XC_MAX_ORDER,EN,FUN)
+#endif // XCFUN_ADOLC
+#endif // XCFUN_RAPSODIA
 #endif // XCFUN_REVERSEAD
+
+
+
+
 
 #define PARAMETER(P) template<> const char *pardat_db<P>::symbol = #P; template<> parameter_data pardat_db<P>::d
 
